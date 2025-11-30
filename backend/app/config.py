@@ -1,8 +1,16 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
+import os
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore"
+    )
+
     # Supabase
     supabase_url: str
     supabase_key: str
@@ -20,9 +28,6 @@ class Settings(BaseSettings):
     frontend_url: str = "http://localhost:5173"
     secret_key: str
     expense_email_label: str = "Expenses"
-
-    class Config:
-        env_file = ".env"
 
 
 @lru_cache()
