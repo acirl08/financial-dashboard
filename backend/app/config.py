@@ -1,35 +1,59 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from functools import lru_cache
 import os
+from functools import lru_cache
+from typing import Optional
 
 
-class Settings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        case_sensitive=False,
-        extra="ignore"
-    )
+class Settings:
+    """Settings class that reads from environment variables."""
 
-    # Supabase
-    supabase_url: str
-    supabase_key: str
-    supabase_service_key: str
+    def __init__(self):
+        # Debug: Print available env vars (will show in Railway logs)
+        print("Loading settings from environment...")
+        print(f"Available env vars: {[k for k in os.environ.keys() if not k.startswith('_')]}")
 
-    # Google OAuth
-    google_client_id: str
-    google_client_secret: str
-    google_redirect_uri: str = "http://localhost:8000/auth/google/callback"
+        # Supabase
+        self.supabase_url = os.environ.get("SUPABASE_URL", "")
+        self.supabase_key = os.environ.get("SUPABASE_KEY", "")
+        self.supabase_service_key = os.environ.get("SUPABASE_SERVICE_KEY", "")
 
-    # Google Gemini
-    gemini_api_key: str
+        # Google OAuth
+        self.google_client_id = os.environ.get("GOOGLE_CLIENT_ID", "")
+        self.google_client_secret = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+        self.google_redirect_uri = os.environ.get("GOOGLE_REDIRECT_URI", "http://localhost:8000/auth/google/callback")
 
-    # App
-    frontend_url: str = "http://localhost:5173"
-    secret_key: str
-    expense_email_label: str = "Expenses"
+        # Google Gemini
+        self.gemini_api_key = os.environ.get("GEMINI_API_KEY", "")
+
+        # App
+        self.frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+        self.secret_key = os.environ.get("SECRET_KEY", "default-secret-key")
+        self.expense_email_label = os.environ.get("EXPENSE_EMAIL_LABEL", "Expenses")
+
+        # Validate required settings
+        missing = []
+        if not self.supabase_url:
+            missing.append("SUPABASE_URL")
+        if not self.supabase_key:
+            missing.append("SUPABASE_KEY")
+        if not self.supabase_service_key:
+            missing.append("SUPABASE_SERVICE_KEY")
+        if not self.google_client_id:
+            missing.append("GOOGLE_CLIENT_ID")
+        if not self.google_client_secret:
+            missing.append("GOOGLE_CLIENT_SECRET")
+        if not self.gemini_api_key:
+            missing.append("GEMINI_API_KEY")
+
+        if missing:
+            print(f"WARNING: Missing environment variables: {missing}")
+            print("The app may not work correctly without these.")
 
 
-@lru_cache()
+_settings: Optional[Settings] = None
+
+
 def get_settings() -> Settings:
-    return Settings()
+    global _settings
+    if _settings is None:
+        _settings = Settings()
+    return _settings
