@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Home,
   PlusCircle,
@@ -39,6 +39,7 @@ interface CategoryTotal {
   name: string;
   amount: number;
   color: string;
+  [key: string]: string | number;
 }
 
 // Sample data
